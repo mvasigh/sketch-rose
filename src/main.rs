@@ -5,6 +5,7 @@ use nannou::prelude::*;
 const SIZE: f32 = 350.0;
 const MIN_GREY: f32 = 0.08;
 const MAX_GREY: f32 = 0.9;
+const IMG_OUTPUT: bool = true;
 
 enum LineKind {
     Inner,
@@ -89,6 +90,9 @@ fn update(app: &App, model: &mut Model, _update: Update) {
 
 fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
+    let window = app
+        .window(model._window)
+        .expect("Could not get the main window");
 
     if app.elapsed_frames() == 1 {
         draw.background().color(gray(MAX_GREY));
@@ -105,5 +109,9 @@ fn view(app: &App, model: &Model, frame: Frame) {
         .weight(0.5)
         .points_colored(model.inner.to_owned());
 
+    if IMG_OUTPUT {   
+        let filename = format!("./out/img{:04}.png", app.elapsed_frames());
+        window.capture_frame(filename);
+    }
     draw.to_frame(app, &frame).unwrap();
 }
