@@ -1,12 +1,10 @@
-use std::f32::MIN;
-
 use nannou::math::prelude::*;
 use nannou::math::Deg;
 use nannou::prelude::*;
 
 const SIZE: f32 = 350.0;
 const MIN_GREY: f32 = 0.08;
-const MAX_GREY: f32 = 0.8;
+const MAX_GREY: f32 = 0.9;
 
 enum LineKind {
     Inner,
@@ -27,12 +25,12 @@ fn get_point(angle: i32, variant: LineKind, model: &Model) -> Point2<f32> {
     let x = k.sin() * r;
     let y = k.cos() * r;
 
-    pt2(x, y)
+    pt2(x, y - 20.0)
 }
 
 fn get_color(pt: Point2<f32>) -> Srgb {
     let dist = distance(pt, pt2(0.0, 0.0));
-    let val = map_range(dist, 0.0, 450.0, MAX_GREY, MIN_GREY);
+    let val = map_range(dist, 0.0, 450.0, MAX_GREY - 0.3, MIN_GREY);
     srgb(val, val, val)
 }
 
@@ -40,6 +38,8 @@ struct Model {
     _window: WindowId,
     n: f32,
     d: f32,
+    outer: Vec<(Point2, Srgb)>,
+    inner: Vec<(Point2, Srgb)>,
 }
 
 fn main() {
@@ -49,40 +49,61 @@ fn main() {
 fn model(app: &App) -> Model {
     let _window = app.new_window().size(800, 800).view(view).build().unwrap();
     let n = 2.0;
-    let d = 39.0;
+    let d = 71.0;
+    let outer = Vec::new();
+    let inner = Vec::new();
 
-    Model { _window, n, d }
+    Model {
+        _window,
+        n,
+        d,
+        outer,
+        inner,
+    }
 }
 
-fn update(_app: &App, _model: &mut Model, _update: Update) {}
+fn update(app: &App, model: &mut Model, _update: Update) {
+    model.d += 0.125;
+
+    let start_index = app.elapsed_frames() % 360;
+    let outer = (start_index..start_index + 20)
+        .map(|i| {
+            let pt = get_point(i as i32, LineKind::Outer, &model);
+            let color = get_color(pt);
+
+            (pt, color)
+        })
+        .collect();
+    let inner = (start_index..start_index + 180)
+        .map(|i| {
+            let pt = get_point(i as i32, LineKind::Inner, &model);
+            let color = get_color(pt);
+
+            (pt, color)
+        })
+        .collect();
+
+    model.outer = outer;
+    model.inner = inner;
+}
 
 fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
 
     if app.elapsed_frames() == 1 {
-        draw.background().color(gray(MIN_GREY));
+        draw.background().color(gray(MAX_GREY));
     }
     draw.rect()
         .w_h(800.0, 800.0)
-        .color(srgba(MAX_GREY, MAX_GREY, MAX_GREY, 0.2));
+        .color(srgba(MAX_GREY, MAX_GREY, MAX_GREY, 0.05));
 
-    let outer = (0..=360).map(|i| {
-        let pt = get_point(i, LineKind::Outer, &model);
-        let color = get_color(pt);
+    // draw.polyline()
+    //     .weight(4.0)
+    //     .points_colored(model.outer.to_owned());
 
-        (pt, color)
-    });
-
-    draw.polyline().weight(4.0).points_colored(outer);
-
-    let inner = (0..=360).map(|i| {
-        let pt = get_point(i, LineKind::Inner, &model);
-        let color = get_color(pt);
-
-        (pt, color)
-    });
-
-    draw.polyline().weight(1.5).points_colored(inner);
+    draw.polyline()
+        .weight(0.5)
+        .points_colored(model.inner.to_owned());
 
     draw.to_frame(app, &frame).unwrap();
 }
