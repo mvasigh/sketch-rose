@@ -50,9 +50,7 @@ fn model(app: &App) -> Model {
     Model { _window, n, d }
 }
 
-fn update(_app: &App, _model: &mut Model, _update: Update) {
-    _model.d += 0.0002;
-}
+fn update(_app: &App, _model: &mut Model, _update: Update) {}
 
 fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
@@ -71,16 +69,16 @@ fn view(app: &App, model: &Model, frame: Frame) {
         (pt, color)
     });
 
-    draw.polyline().weight(3.0).points_colored(outer);
+    draw.polyline().weight(4.0).points_colored(outer);
 
-    let inner = (0..=180).map(|i| {
+    let inner = (0..=360).map(|i| {
         let pt = get_point(i, LineKind::Inner, &model);
         let color = get_color(pt);
 
         (pt, color)
     });
 
-    draw.polyline().weight(1.0).points_colored(inner);
+    draw.polyline().weight(1.5).points_colored(inner);
 
     draw.to_frame(app, &frame).unwrap();
 }
