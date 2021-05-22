@@ -1,8 +1,12 @@
+use std::f32::MIN;
+
 use nannou::math::prelude::*;
 use nannou::math::Deg;
 use nannou::prelude::*;
 
 const SIZE: f32 = 350.0;
+const MIN_GREY: f32 = 0.08;
+const MAX_GREY: f32 = 0.8;
 
 enum LineKind {
     Inner,
@@ -28,7 +32,7 @@ fn get_point(angle: i32, variant: LineKind, model: &Model) -> Point2<f32> {
 
 fn get_color(pt: Point2<f32>) -> Srgb {
     let dist = distance(pt, pt2(0.0, 0.0));
-    let val = map_range(dist, 0.0, 450.0, 0.08, 0.8);
+    let val = map_range(dist, 0.0, 450.0, MAX_GREY, MIN_GREY);
     srgb(val, val, val)
 }
 
@@ -56,11 +60,11 @@ fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
 
     if app.elapsed_frames() == 1 {
-        draw.background().color(gray(0.08));
+        draw.background().color(gray(MIN_GREY));
     }
     draw.rect()
         .w_h(800.0, 800.0)
-        .color(srgba(0.08, 0.08, 0.08, 0.2));
+        .color(srgba(MAX_GREY, MAX_GREY, MAX_GREY, 0.2));
 
     let outer = (0..=360).map(|i| {
         let pt = get_point(i, LineKind::Outer, &model);
