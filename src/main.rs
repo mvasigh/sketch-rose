@@ -2,6 +2,8 @@ use nannou::math::prelude::*;
 use nannou::math::Deg;
 use nannou::prelude::*;
 
+const SIZE: f32 = 350.0;
+
 enum LineKind {
     Inner,
     Outer,
@@ -17,16 +19,17 @@ fn get_point(angle: i32, variant: LineKind, model: &Model) -> Point2<f32> {
         LineKind::Outer => 1.0,
     };
     let k = Deg(angle as f32 * factor);
-    let r = 300.0 * (k * model.n).sin();
+    let r = SIZE * (k * model.n).sin();
     let x = k.sin() * r;
     let y = k.cos() * r;
 
     pt2(x, y)
 }
 
-fn get_color(pt: Point2<f32>) -> Hsl {
+fn get_color(pt: Point2<f32>) -> Srgb {
     let dist = distance(pt, pt2(0.0, 0.0));
-    hsl(0.0, 0.0, map_range(dist, 0.0, 300.0, 0.6, 0.1))
+    let val = map_range(dist, 0.0, 450.0, 0.08, 0.8);
+    srgb(val, val, val)
 }
 
 struct Model {
@@ -42,26 +45,24 @@ fn main() {
 fn model(app: &App) -> Model {
     let _window = app.new_window().size(800, 800).view(view).build().unwrap();
     let n = 2.0;
-    let d = 35.0;
+    let d = 39.0;
 
     Model { _window, n, d }
 }
 
-fn update(_app: &App, _model: &mut Model, _update: Update) {}
+fn update(_app: &App, _model: &mut Model, _update: Update) {
+    _model.d += 0.0002;
+}
 
 fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
 
-    draw.background().color(gray(0.08));
-
-    let inner = (0..=360).map(|i| {
-        let pt = get_point(i, LineKind::Inner, &model);
-        let color = get_color(pt);
-
-        (pt, color)
-    });
-
-    draw.polyline().weight(2.0).points_colored(inner);
+    if app.elapsed_frames() == 1 {
+        draw.background().color(gray(0.08));
+    }
+    draw.rect()
+        .w_h(800.0, 800.0)
+        .color(srgba(0.08, 0.08, 0.08, 0.2));
 
     let outer = (0..=360).map(|i| {
         let pt = get_point(i, LineKind::Outer, &model);
@@ -71,6 +72,15 @@ fn view(app: &App, model: &Model, frame: Frame) {
     });
 
     draw.polyline().weight(3.0).points_colored(outer);
+
+    let inner = (0..=180).map(|i| {
+        let pt = get_point(i, LineKind::Inner, &model);
+        let color = get_color(pt);
+
+        (pt, color)
+    });
+
+    draw.polyline().weight(1.0).points_colored(inner);
 
     draw.to_frame(app, &frame).unwrap();
 }
