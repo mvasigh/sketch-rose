@@ -3,8 +3,8 @@ use nannou::math::Deg;
 use nannou::prelude::*;
 
 const SIZE: f32 = 350.0;
-const MIN_GREY: f32 = 0.08;
-const MAX_GREY: f32 = 0.9;
+const MAX_GREY: f32 = 0.08;
+const MIN_GREY: f32 = 0.9;
 const IMG_OUTPUT: bool = true;
 
 enum LineKind {
@@ -26,12 +26,12 @@ fn get_point(angle: i32, variant: LineKind, model: &Model) -> Point2<f32> {
     let x = k.sin() * r;
     let y = k.cos() * r;
 
-    pt2(x, y - 20.0)
+    pt2(x, y)
 }
 
 fn get_color(pt: Point2<f32>) -> Srgb {
     let dist = distance(pt, pt2(0.0, 0.0));
-    let val = map_range(dist, 0.0, 450.0, MAX_GREY - 0.3, MIN_GREY);
+    let val = map_range(dist, 0.0, 450.0, MAX_GREY + 0.3, MIN_GREY);
     srgb(val, val, val)
 }
 
@@ -49,7 +49,7 @@ fn main() {
 
 fn model(app: &App) -> Model {
     let _window = app.new_window().size(800, 800).view(view).build().unwrap();
-    let n = 2.0;
+    let n = 4.0;
     let d = 71.0;
     let outer = Vec::new();
     let inner = Vec::new();
